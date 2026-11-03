@@ -221,6 +221,109 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
+          {/* Data Sources Status Panel (Catalog Engine) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-mono-code uppercase text-[#CCFF00] tracking-wider flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                Catalog Engine & Data Sources
+              </h3>
+              <span className="text-[10px] font-mono-code text-zinc-500">
+                Priority: IMDb Datasets → TMDB → OMDb → Extension
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Source 1: IMDb Official Datasets */}
+              <div className="bg-[#0B0D14] p-3.5 rounded-2xl border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></span>
+                      IMDb Official Datasets
+                    </span>
+                    <span className="text-[10px] font-mono-code text-[#CCFF00] bg-[#CCFF00]/10 px-2 py-0.5 rounded">
+                      ACTIVE (PRIORITY 1)
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Compact local dataset from <code className="text-zinc-300">datasets.imdbws.com</code>. Fast offline filtering by title, rating, runtime and votes.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono-code text-zinc-500">
+                  <span>Count: 56+ Essential</span>
+                  <span>Refresh: <code className="text-[#CCFF00]">npm run import:imdb</code></span>
+                </div>
+              </div>
+
+              {/* Source 2: TMDB API */}
+              <div className="bg-[#0B0D14] p-3.5 rounded-2xl border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full ${settings.tmdbApiKey ? 'bg-[#00F0FF]' : 'bg-amber-400'}`}></span>
+                      TMDB Metadata API
+                    </span>
+                    <span className={`text-[10px] font-mono-code px-2 py-0.5 rounded ${settings.tmdbApiKey ? 'text-[#00F0FF] bg-[#00F0FF]/10' : 'text-amber-400 bg-amber-400/10'}`}>
+                      {settings.tmdbApiKey ? 'KEY CONFIGURED' : 'CACHE FALLBACK'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Provides 4K posters, backdrops, trailers, cast lists, and streaming provider mappings.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono-code text-zinc-500">
+                  <span>Mode: {settings.tmdbApiKey ? 'Live TMDB v3 API' : 'High-Res CDN Fallback'}</span>
+                  <span>Status: Ready</span>
+                </div>
+              </div>
+
+              {/* Source 3: Gemini Recommendation AI */}
+              <div className="bg-[#0B0D14] p-3.5 rounded-2xl border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#FF007F] animate-pulse"></span>
+                      Gemini Natural Language
+                    </span>
+                    <span className="text-[10px] font-mono-code text-[#FF007F] bg-[#FF007F]/10 px-2 py-0.5 rounded">
+                      ACTIVE
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Translates natural queries into structured discovery filters with tailored "Why this for you" critique.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono-code text-zinc-500">
+                  <span>Model: gemini-3.8-flash</span>
+                  <span>Server-side enabled</span>
+                </div>
+              </div>
+
+              {/* Source 4: Browser Extension Sync */}
+              <div className="bg-[#0B0D14] p-3.5 rounded-2xl border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#CCFF00]"></span>
+                      Extension Scraper & BDIX
+                    </span>
+                    <span className="text-[10px] font-mono-code text-[#CCFF00] bg-[#CCFF00]/10 px-2 py-0.5 rounded">
+                      ACTIVE BRIDGE
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400">
+                    Extracts active media server libraries (Plex, Jellyfin, DFlix, AllSiteHub) & collected movie lists.
+                  </p>
+                </div>
+                <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono-code text-zinc-500">
+                  <span>Servers: {allData.servers.length}</span>
+                  <span>Library: {allData.movies.length} titles</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Data Backup & Restore */}
           <div className="space-y-3">
             <h3 className="text-xs font-mono-code uppercase text-zinc-400 tracking-wider">

@@ -9,6 +9,7 @@
     "start": "node server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
+    "import:imdb": "node scripts/import-imdb-datasets.js",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

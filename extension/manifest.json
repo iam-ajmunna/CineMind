@@ -5,6 +5,7 @@
   "description": "Automatically fingerprints movie servers (Plex, Jellyfin, Emby, Stremio, etc.) and syncs available films with your personal CINEMIND discovery site.",
   "permissions": [
     "activeTab",
+    "tabs",
     "storage",
     "scripting"
   ],
@@ -33,11 +34,5 @@
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
-  },
-  "externally_connectable": {
-    "matches": [
-      "http://localhost:*/*",
-      "https://*.run.app/*"
-    ]
   }
 }
