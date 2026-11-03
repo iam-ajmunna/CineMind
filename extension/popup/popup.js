@@ -139,6 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Open site
   btnOpenSite?.addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:3000' });
+    chrome.tabs.create({ url: 'https://iam-ajmunna.github.io/CineMind/' });
   });
 });

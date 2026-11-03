@@ -21,7 +21,13 @@
   // 1. PAGE CLASSIFICATION
   function classifyPage() {
     // Check if on CINEMIND web application
-    if (currentHost === 'localhost' || currentHost === '127.0.0.1' || currentUrl.includes('.run.app')) {
+    if (
+      currentHost === 'localhost' ||
+      currentHost === '127.0.0.1' ||
+      currentUrl.includes('.run.app') ||
+      currentHost.includes('iam-ajmunna.github.io') ||
+      (currentHost.includes('github.io') && currentUrl.includes('cinemind'))
+    ) {
       return { category: 'cinemind_site' };
     }
 
@@ -385,7 +391,7 @@
         chip.innerHTML = `
           <span style="color:#00F0FF;font-size:14px;">⚡</span>
           <span>NOT ON YOUR SERVER</span>
-          <a href="http://localhost:3000" target="_blank" style="background:rgba(0,240,255,0.2);color:#00F0FF;border:1px solid #00F0FF;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:11px;">REQUEST VIA RADARR</a>
+          <a href="https://iam-ajmunna.github.io/CineMind/" target="_blank" style="background:rgba(0,240,255,0.2);color:#00F0FF;border:1px solid #00F0FF;text-decoration:none;padding:4px 10px;border-radius:6px;font-size:11px;">REQUEST VIA RADARR</a>
         `;
       }
 

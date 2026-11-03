@@ -246,8 +246,14 @@ function broadcastSyncToWebsiteTabs(movies, servers) {
         if (!tab || !tab.id) continue;
         const tabUrl = tab.url || '';
 
-        // Match CINEMIND local dev server or cloud run app
-        if (tabUrl.includes('localhost') || tabUrl.includes('127.0.0.1') || tabUrl.includes('.run.app')) {
+        // Match CINEMIND local dev server, cloud run, or GitHub Pages
+        if (
+          tabUrl.includes('localhost') ||
+          tabUrl.includes('127.0.0.1') ||
+          tabUrl.includes('.run.app') ||
+          tabUrl.includes('iam-ajmunna.github.io') ||
+          (tabUrl.includes('github.io') && tabUrl.includes('cinemind'))
+        ) {
           chrome.tabs.sendMessage(
             tab.id,
             {
