@@ -1,0 +1,6 @@
+{
+  "name": "CINEMIND — AI Movie Matcher & Media Server Sync",
+  "description": "Personal movie discovery intelligence that syncs with your Plex, Jellyfin, Emby, and Stremio media servers to suggest what to watch tonight from your own library.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

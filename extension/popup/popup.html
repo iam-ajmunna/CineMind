@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CINEMIND Extension</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <span class="blade-slash">⚔</span>
+        <span class="brand-title">CINEMIND</span>
+      </div>
+      <div class="badge">V3 SYNC</div>
+    </div>
+
+    <!-- Active Server Card -->
+    <div class="server-card">
+      <div class="server-status">
+        <span class="status-dot"></span>
+        <span class="server-type" id="server-type">DETECTING SERVER...</span>
+      </div>
+      <div class="server-name" id="server-name">Browsing Active Tab</div>
+      <div class="movie-count-row">
+        <span class="count-number" id="movie-count">0</span>
+        <span class="count-label">Movies Extracted</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-sync">
+        ⚡ Sync with CINEMIND Website
+      </button>
+
+      <button class="btn btn-secondary" id="btn-surprise">
+        🎲 Surprise Me Tonight
+      </button>
+
+      <button class="btn btn-secondary" id="btn-export">
+        📥 Export Library JSON
+      </button>
+
+      <button class="btn btn-outline" id="btn-open-site">
+        🌐 Open CINEMIND Web App
+      </button>
+    </div>
+
+    <!-- Footer Status -->
+    <div class="footer">
+      <span id="status-msg">Private & Local • Zero credentials stored</span>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
