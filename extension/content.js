@@ -87,6 +87,24 @@
 
   const pageInfo = classifyPage();
 
+  // Safe wrapper around chrome.runtime.sendMessage to eliminate context invalidated errors
+  function safeSendMessage(msg, callback) {
+    if (typeof chrome === 'undefined' || !chrome.runtime || !chrome.runtime.id) {
+      return;
+    }
+    try {
+      chrome.runtime.sendMessage(msg, (response) => {
+        if (chrome.runtime.lastError) {
+          // Extension reloaded or listener closed, swallow silently
+          return;
+        }
+        callback?.(response);
+      });
+    } catch (e) {
+      // Swallowed safely
+    }
+  }
+
   // 2. REGISTER RUNTIME MESSAGE LISTENER (Fixes "Receiving end does not exist")
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (!request) {
@@ -123,8 +141,7 @@
 
     window.addEventListener('message', (event) => {
       if (event.data?.type === 'CINEMIND_PING_EXTENSION') {
-        chrome.runtime.sendMessage({ type: 'CINEMIND_GET_STATE' }, (res) => {
-          if (chrome.runtime.lastError) return;
+        safeSendMessage({ type: 'CINEMIND_GET_STATE' }, (res) => {
           window.postMessage({
             type: 'CINEMIND_PONG_EXTENSION',
             data: res?.data || { cinemind_movies: [], cinemind_servers: [] }

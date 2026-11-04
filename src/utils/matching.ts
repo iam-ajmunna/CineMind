@@ -13,6 +13,8 @@ export function calculateMovieMatch(
     rating?: number;
     year?: number;
     overview?: string;
+    industry?: string;
+    isIndianAction?: boolean;
   },
   taste: TasteProfile
 ): MatchBreakdown {
@@ -38,12 +40,11 @@ export function calculateMovieMatch(
     }
 
     if (matchedGenreCount > 0) {
-      // 5 weight = max points, scale up to 35
       const avgWeight = genreScoreSum / matchedGenreCount;
       genreAffinity = Math.min(35, Math.round((avgWeight / 5) * 25 + Math.min(matchedGenreCount * 5, 10)));
     }
   } else if (movieGenres.length > 0) {
-    genreAffinity = 18; // default baseline
+    genreAffinity = 18;
   }
 
   // 2. Director & Actor Affinity (Max 20 points)
@@ -80,7 +81,7 @@ export function calculateMovieMatch(
     'mind-bending': ['twist', 'reality', 'dream', 'dimension', 'memory', 'psychological', 'puzzle', 'time', 'illusion', 'secret', 'existential'],
     'slow-burn': ['atmospheric', 'meditative', 'deliberate', 'isolated', 'slow', 'tension', 'quiet', 'noir', 'unravel', 'dystopian'],
     'neo-noir': ['detective', 'crime', 'cynical', 'shadow', 'city', 'investigation', 'murder', 'underworld'],
-    'adrenaline-rush': ['heist', 'escape', 'action', 'pursuit', 'explosive', 'race', 'agent', 'speed'],
+    'adrenaline-rush': ['heist', 'escape', 'action', 'pursuit', 'explosive', 'race', 'agent', 'speed', 'mass', 'fight', 'gunfire'],
     'feel-good': ['heartwarming', 'comedy', 'friendship', 'uplifting', 'joy', 'charming', 'sweet'],
     'cyberpunk': ['future', 'ai', 'android', 'neon', 'dystopian', 'hacker', 'megacity', 'tech', 'blade runner'],
     'cosmic-horror': ['unknown', 'sanity', 'void', 'alien', 'abyss', 'dread', 'eldritch', 'entity']
@@ -105,6 +106,15 @@ export function calculateMovieMatch(
   }
 
   vibeAffinity = Math.min(20, Math.max(vibeMatches > 0 ? (vibeMatches * 7 + 4) : 0, activeVibes.length === 0 ? 12 : 4));
+
+  // Industry / Indian Action Boost
+  if (taste.prioritizeIndianAction && movie.isIndianAction) {
+    vibeAffinity = Math.min(20, vibeAffinity + 4);
+    matchedReasons.push('High-octane Indian mass-action');
+  }
+  if (movie.industry && (taste.preferredIndustries || []).includes(movie.industry)) {
+    matchedReasons.push(`Preferred industry: ${movie.industry.toUpperCase()}`);
+  }
 
   // 4. Runtime Fit (Max 10 points)
   let runtimeFit = 5;
@@ -144,7 +154,6 @@ export function calculateMovieMatch(
 
   // 5. Community Rating Weight (Max 15 points)
   const rating = movie.rating || 7.0;
-  // Scaled from 6.0 - 9.0 to 0 - 15 points
   const communityRating = Math.min(15, Math.max(4, Math.round(((rating - 5.5) / 3.5) * 15)));
 
   // Total

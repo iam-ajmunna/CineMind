@@ -2,20 +2,39 @@
 <html lang="en" class="dark scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>CINEMIND — AI Movie Matcher & Media Server Sync</title>
     <meta name="description" content="Personal movie discovery intelligence that syncs with your Plex, Jellyfin, Emby, and Stremio media servers to suggest what to watch tonight from your own library." />
     <meta property="og:title" content="CINEMIND — AI Movie Matcher & Media Server Sync" />
     <meta property="og:description" content="Personal movie discovery intelligence that syncs with your Plex, Jellyfin, Emby, and Stremio media servers to suggest what to watch tonight from your own library." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0B0B0F" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="CINEMIND" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;800;900&family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..800&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700;900&family=Inter:ital,opsz,wght@0,14..32,300..900;1,14..32,300..800&family=JetBrains+Mono:wght@400;600;700&family=Montserrat:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+    <script>
+      // Gracefully handle ambient dev WebSocket reconnections in sandboxed iframes
+      window.addEventListener('error', function (event) {
+        if (event && (event.message?.includes('WebSocket') || event.message?.includes('vite'))) {
+          event.stopImmediatePropagation();
+        }
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        if (event && event.reason && String(event.reason).includes('WebSocket')) {
+          event.preventDefault();
+        }
+      });
+    </script>
   </head>
-  <body class="bg-[#07070A] text-[#E2E8F0] selection:bg-[#CCFF00] selection:text-black antialiased overflow-x-hidden min-h-screen">
+  <body class="bg-[#0B0B0F] text-[#E2E8F0] selection:bg-[#E50914] selection:text-white antialiased overflow-x-hidden min-h-screen">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

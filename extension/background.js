@@ -1,12 +1,11 @@
 /**
  * CINEMIND Manifest V3 Background Service Worker
- * Bulletproof cross-tab media server synchronization and storage.
- * Designed to eliminate all "Unchecked runtime.lastError" warnings.
+ * Robust cross-tab media server synchronization and storage.
+ * Designed to eliminate all "Unchecked runtime.lastError" and "Message channel closed" errors.
  */
 
 // Initialize storage structure on install
 chrome.runtime.onInstalled.addListener(() => {
-  console.log('[CINEMIND] Service worker initialized.');
   try {
     chrome.storage.local.get(['cinemind_servers', 'cinemind_movies'], (res) => {
       if (chrome.runtime.lastError) return;
@@ -20,26 +19,42 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     });
   } catch (err) {
-    console.warn('[CINEMIND] Install init error:', err);
+    // Ignore init error
   }
 });
 
+// Helper for safe responses in MV3
+function createSafeResponder(sendResponse) {
+  let responded = false;
+  return (data) => {
+    if (responded) return;
+    responded = true;
+    try {
+      sendResponse(data);
+    } catch (e) {
+      // Message port was already closed by caller
+    }
+  };
+}
+
 // Message listener from content script or popup
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((request, sender, rawSendResponse) => {
   if (!request || typeof request !== 'object') {
-    sendResponse({ status: 'ignored' });
+    rawSendResponse({ status: 'ignored' });
     return false;
   }
+
+  const sendResponse = createSafeResponder(rawSendResponse);
 
   try {
     if (request.type === 'CINEMIND_SERVER_DETECTED') {
       handleServerDetected(request.payload, sendResponse);
-      return true; // async
+      return true; // async response
     }
 
     if (request.type === 'CINEMIND_MOVIES_EXTRACTED') {
       handleMoviesExtracted(request.payload, sendResponse);
-      return true; // async
+      return true; // async response
     }
 
     if (request.type === 'CINEMIND_GET_STATE') {
@@ -56,25 +71,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           }
         });
       });
-      return true;
+      return true; // async response
     }
 
     if (request.type === 'CINEMIND_CHECK_MOVIE_AVAILABILITY') {
-      // Query whether a given title/year exists on user's servers
-      const queryTitle = (request.payload?.title || '').toLowerCase().trim();
+      const queryTitle = String(request.payload?.title || '').toLowerCase().trim();
       const queryYear = Number(request.payload?.year) || 0;
 
       chrome.storage.local.get(['cinemind_movies'], (data) => {
         if (chrome.runtime.lastError) {
-          sendResponse({ available: false });
+          sendResponse({ available: false, movie: null });
           return;
         }
         const movies = Array.isArray(data?.cinemind_movies) ? data.cinemind_movies : [];
         const match = movies.find((m) => {
           if (!m || !m.title) return false;
-          const cleanMTitle = m.title.toLowerCase().trim();
+          const cleanMTitle = String(m.title).toLowerCase().trim();
           if (cleanMTitle === queryTitle) return true;
-          if (queryTitle.length > 4 && cleanMTitle.includes(queryTitle)) return true;
+          if (queryTitle.length > 4 && (cleanMTitle.includes(queryTitle) || queryTitle.includes(cleanMTitle))) {
+            return true;
+          }
           return false;
         });
 
@@ -83,7 +99,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
           movie: match || null
         });
       });
-      return true;
+      return true; // async response
     }
 
     if (request.type === 'CINEMIND_EXPORT_JSON') {
@@ -94,14 +110,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         sendResponse({ status: 'ok', data });
       });
-      return true;
+      return true; // async response
     }
 
-    // Default response for unhandled message types
     sendResponse({ status: 'unhandled' });
     return false;
   } catch (err) {
-    console.warn('[CINEMIND] onMessage error:', err);
     sendResponse({ status: 'error', message: String(err) });
     return false;
   }
@@ -109,13 +123,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 function handleServerDetected(serverInfo, callback) {
   if (!serverInfo || typeof serverInfo !== 'object') {
-    callback?.({ status: 'error', message: 'Invalid serverInfo' });
+    callback({ status: 'error', message: 'Invalid serverInfo' });
     return;
   }
 
   chrome.storage.local.get(['cinemind_servers'], (res) => {
     if (chrome.runtime.lastError) {
-      callback?.({ status: 'error' });
+      callback({ status: 'error' });
       return;
     }
 
@@ -143,17 +157,17 @@ function handleServerDetected(serverInfo, callback) {
 
     chrome.storage.local.set({ cinemind_servers: servers }, () => {
       if (chrome.runtime.lastError) {
-        callback?.({ status: 'error' });
+        callback({ status: 'error' });
         return;
       }
-      callback?.({ status: 'ok', servers });
+      callback({ status: 'ok', servers });
     });
   });
 }
 
 function handleMoviesExtracted(payload, callback) {
   if (!payload || typeof payload !== 'object') {
-    callback?.({ status: 'error', message: 'Invalid payload' });
+    callback({ status: 'error', message: 'Invalid payload' });
     return;
   }
 
@@ -162,21 +176,19 @@ function handleMoviesExtracted(payload, callback) {
 
   chrome.storage.local.get(['cinemind_movies', 'cinemind_servers'], (res) => {
     if (chrome.runtime.lastError) {
-      callback?.({ status: 'error' });
+      callback({ status: 'error' });
       return;
     }
 
     let storedMovies = Array.isArray(res?.cinemind_movies) ? res.cinemind_movies : [];
     const movieMap = new Map();
 
-    // Key existing movies safely
     for (const m of storedMovies) {
       if (!m || !m.title) continue;
       const key = `${String(m.title).toLowerCase().trim()}-${m.year || ''}`;
       movieMap.set(key, m);
     }
 
-    // Merge new movies safely
     for (const m of incomingMovies) {
       if (!m || !m.title) continue;
       const key = `${String(m.title).toLowerCase().trim()}-${m.year || ''}`;
@@ -204,7 +216,6 @@ function handleMoviesExtracted(payload, callback) {
 
     const updatedMovies = Array.from(movieMap.values());
 
-    // Update server movie count
     let servers = Array.isArray(res?.cinemind_servers) ? [...res.cinemind_servers] : [];
     const targetId = server.id || server.url || 'custom';
     const sIndex = servers.findIndex((s) => s && (s.id === targetId || (s.url && s.url === server.url)));
@@ -228,11 +239,11 @@ function handleMoviesExtracted(payload, callback) {
 
     chrome.storage.local.set({ cinemind_movies: updatedMovies, cinemind_servers: servers }, () => {
       if (chrome.runtime.lastError) {
-        callback?.({ status: 'error' });
+        callback({ status: 'error' });
         return;
       }
       broadcastSyncToWebsiteTabs(updatedMovies, servers);
-      callback?.({ status: 'ok', count: updatedMovies.length });
+      callback({ status: 'ok', count: updatedMovies.length });
     });
   });
 }
@@ -243,34 +254,34 @@ function broadcastSyncToWebsiteTabs(movies, servers) {
       if (chrome.runtime.lastError || !Array.isArray(tabs)) return;
 
       for (const tab of tabs) {
-        if (!tab || !tab.id) continue;
-        const tabUrl = tab.url || '';
+        if (!tab || !tab.id || !tab.url) continue;
+        const tabUrl = tab.url.toLowerCase();
 
-        // Match CINEMIND local dev server, cloud run, or GitHub Pages
+        // Only send to valid web HTTP/HTTPS pages running CINEMIND
         if (
-          tabUrl.includes('localhost') ||
-          tabUrl.includes('127.0.0.1') ||
-          tabUrl.includes('.run.app') ||
-          tabUrl.includes('iam-ajmunna.github.io') ||
-          (tabUrl.includes('github.io') && tabUrl.includes('cinemind'))
+          (tabUrl.startsWith('http://') || tabUrl.startsWith('https://')) &&
+          (tabUrl.includes('localhost') || tabUrl.includes('127.0.0.1') || tabUrl.includes('.run.app'))
         ) {
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'CINEMIND_EXTENSION_SYNC',
-              payload: { movies, servers }
-            },
-            () => {
-              // Intentionally access lastError to swallow connection issues cleanly
-              if (chrome.runtime.lastError) {
-                // Tab doesn't have an active listener, completely normal
+          try {
+            chrome.tabs.sendMessage(
+              tab.id,
+              {
+                type: 'CINEMIND_EXTENSION_SYNC',
+                payload: { movies, servers }
+              },
+              () => {
+                if (chrome.runtime.lastError) {
+                  // Tab not ready or closed, harmless
+                }
               }
-            }
-          );
+            );
+          } catch (e) {
+            // Harmless
+          }
         }
       }
     });
   } catch (err) {
-    console.warn('[CINEMIND] broadcastSync error:', err);
+    // Ignore broadcast errors
   }
 }
